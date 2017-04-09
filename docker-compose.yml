@@ -12,7 +12,7 @@ services:
             - /etc/nginx/vhost.d
             - ./nginx/certs:/etc/nginx/certs:ro
         networks:
-            - proxy-tier
+            - front
     dockergen:
         image: jwilder/docker-gen
         container_name: nginx-gen
@@ -22,7 +22,7 @@ services:
             - ./nginx/nginx.tmpl:/etc/docker-gen/templates/nginx.tmpl
             - nginx-volume
         networks:
-            - proxy-tier
+            - front
     letsencrypt-nginx-proxy-companion:
         restart: always
         image: jrcs/letsencrypt-nginx-proxy-companion
@@ -32,13 +32,11 @@ services:
             - ./nginx/certs:/etc/nginx/certs:rw
             - nginx-volume
         networks:
-            - proxy-tier
+            - front
         environment:
             - NGINX_DOCKER_GEN_CONTAINER=nginx-gen
 volumes:
     nginx-volume:
 
 networks:
-    proxy-tier:
-        external:
-            name: "nginx-proxy"
+    front:
