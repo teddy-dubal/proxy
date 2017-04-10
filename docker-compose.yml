@@ -7,12 +7,13 @@ services:
             - "80:80"
             - "443:443"
         volumes:
-            - /etc/nginx/conf.d
-            - /usr/share/nginx/html
-            - /etc/nginx/vhost.d
-            - ./nginx/certs:/etc/nginx/certs:ro
+            - nginx-share-volume:/usr/share/nginx/html
+            - nginx-vhost-volume:/etc/nginx/vhost.d
+            - nginx-conf-volume:/etc/nginx/conf.d
+            - nginx-cert-volume:/etc/nginx/certs:ro
         networks:
             - front
+            - back
     dockergen:
         image: jwilder/docker-gen
         container_name: nginx-gen
@@ -20,26 +21,29 @@ services:
         volumes:
             - /var/run/docker.sock:/tmp/docker.sock:ro
             - ./nginx/nginx.tmpl:/etc/docker-gen/templates/nginx.tmpl
-            - nginx-volume
+            - nginx-conf-volume:/etc/nginx/conf.d
         networks:
             - front
+            - back
     letsencrypt-nginx-proxy-companion:
         restart: always
         image: jrcs/letsencrypt-nginx-proxy-companion
         container_name: letsencrypt-nginx-proxy-companion
         volumes:
             - /var/run/docker.sock:/var/run/docker.sock:ro
-            - ./nginx/certs:/etc/nginx/certs:rw
-            - nginx-volume
+            - nginx-cert-volume:/etc/nginx/certs:rw
+            - nginx-vhost-volume:/etc/nginx/vhost.d
+            - nginx-share-volume:/usr/share/nginx/html
         networks:
             - front
+            - back
         environment:
             - NGINX_DOCKER_GEN_CONTAINER=nginx-gen
 volumes:
-    nginx-volume:
-        - /etc/nginx/conf.d
-        - /usr/share/nginx/html
-        - /etc/nginx/vhost.d
-        - ./nginx/certs:/etc/nginx/certs:ro
+    nginx-cert-volume:
+    nginx-conf-volume:
+    nginx-vhost-volume:
+    nginx-share-volume:
 networks:
     front:
+    back:
