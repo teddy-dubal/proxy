@@ -22,6 +22,7 @@ services:
             - /var/run/docker.sock:/tmp/docker.sock:ro
             - ./nginx/nginx.tmpl:/etc/docker-gen/templates/nginx.tmpl
             - nginx-conf-volume:/etc/nginx/conf.d
+            - nginx-cert-volume:/etc/nginx/certs:ro
         networks:
             - front
             - back
