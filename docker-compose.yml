@@ -1,52 +1,35 @@
-version: '3'
 services:
-    nginx:
+    nginx-proxy:
+        image: nginxproxy/nginx-proxy:1.4
+        container_name: nginx-proxy
         restart: always
-        image: nginx
-        container_name: nginx
         ports:
             - "80:80"
             - "443:443"
         volumes:
-            - nginx-share-volume:/usr/share/nginx/html
-            - nginx-vhost-volume:/etc/nginx/vhost.d
-            - nginx-conf-volume:/etc/nginx/conf.d
-            - nginx-cert-volume:/etc/nginx/certs:ro
-        networks:
-            - front
-            - back
-    dockergen:
-        restart: always
-        image: jwilder/docker-gen
-        container_name: nginx-gen
-        command: -notify-sighup nginx -watch /etc/docker-gen/templates/nginx.tmpl /etc/nginx/conf.d/default.conf
-        volumes:
             - /var/run/docker.sock:/tmp/docker.sock:ro
-            - ./nginx/nginx.tmpl:/etc/docker-gen/templates/nginx.tmpl
-            - nginx-conf-volume:/etc/nginx/conf.d
-            - nginx-cert-volume:/etc/nginx/certs:ro
-        networks:
-            - front
-            - back
-    letsencrypt-nginx-proxy-companion:
+            - conf:/etc/nginx/conf.d
+            - vhost:/etc/nginx/vhost.d
+            - certs:/etc/nginx/certs:ro
+            - html:/usr/share/nginx/html
+        network_mode: bridge
+    acme-companion:
+        container_name: nginx-proxy-acme
         restart: always
-        image: jrcs/letsencrypt-nginx-proxy-companion
-        container_name: letsencrypt-nginx-proxy-companion
+        image: nginxproxy/acme-companion
+        volumes_from:
+            - nginx-proxy
         volumes:
             - /var/run/docker.sock:/var/run/docker.sock:ro
-            - nginx-cert-volume:/etc/nginx/certs:rw
-            - nginx-vhost-volume:/etc/nginx/vhost.d
-            - nginx-share-volume:/usr/share/nginx/html
-        networks:
-            - front
-            - back
+            - certs:/etc/nginx/certs:rw
+            - acme:/etc/acme.sh
+        # network_mode: bridge
         environment:
-            - NGINX_DOCKER_GEN_CONTAINER=nginx-gen
+            DEFAULT_EMAIL: teddy.dubal+devqueen@gmail.com
+        network_mode: bridge
 volumes:
-    nginx-cert-volume:
-    nginx-conf-volume:
-    nginx-vhost-volume:
-    nginx-share-volume:
-networks:
-    front:
-    back:
+    acme:
+    conf:
+    certs:
+    vhost:
+    html:
