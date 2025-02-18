@@ -12,7 +12,9 @@ services:
             - vhost:/etc/nginx/vhost.d
             - certs:/etc/nginx/certs:ro
             - html:/usr/share/nginx/html
-        network_mode: bridge
+        networks:
+            - back
+            - front
     acme-companion:
         container_name: nginx-proxy-acme
         restart: always
@@ -26,10 +28,15 @@ services:
         # network_mode: bridge
         environment:
             DEFAULT_EMAIL: teddy.dubal+devqueen@gmail.com
-        network_mode: bridge
+        networks:
+            - front
+            - back
 volumes:
     acme:
     conf:
     certs:
     vhost:
     html:
+networks:
+    front:
+    back:
