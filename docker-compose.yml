@@ -12,6 +12,7 @@ services:
             - vhost:/etc/nginx/vhost.d
             - certs:/etc/nginx/certs:ro
             - html:/usr/share/nginx/html
+            - ./nginx/nginx.tmpl:/app/nginx.tmpl
         networks:
             - back
             - front
